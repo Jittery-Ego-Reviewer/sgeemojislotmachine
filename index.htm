@@ -3,130 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>故事元素大冒險 (Story Adventure)</title>
+    <title>故事元素貼紙機</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --arcade-bg: #1a0b2e;
-            --neon-pink: #ff2a6d;
-            --neon-cyan: #05d9e8;
-            --neon-yellow: #ffb800;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
         body {
-            font-family: 'DF-BiauKai', 'BiauKai', 'DFKai-SB', '標楷體', 'Microsoft JhengHei', sans-serif;
-            background-color: var(--arcade-bg);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(255, 42, 109, 0.15), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(5, 217, 232, 0.15), transparent 25%);
-            color: white;
+            font-family: 'Noto Sans TC', sans-serif;
+            /* Adventure landscape background */
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 50%, #7cfc00 50%, #32cd32 100%);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
             overflow-x: hidden;
-            user-select: none;
+            user-select: none; /* Prevent text selection during gameplay */
         }
 
-        /* Arcade Cabinet Styling */
-        .arcade-cabinet {
-            background: linear-gradient(135deg, #2a1b3d 0%, #1a0b2e 100%);
-            border: 4px solid var(--neon-cyan);
-            border-radius: 20px;
-            box-shadow: 
-                0 0 20px rgba(5, 217, 232, 0.5),
-                inset 0 0 20px rgba(5, 217, 232, 0.2);
+        /* Wooden Board styling for the slot machine */
+        .wooden-board {
+            background-color: #d4a373;
+            background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 20px,
+                rgba(0,0,0,0.05) 20px,
+                rgba(0,0,0,0.05) 40px
+            );
+            border: 12px solid #8b5a2b;
+            border-radius: 24px;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.3), inset 0 0 20px rgba(0,0,0,0.2);
             position: relative;
         }
-
-        .arcade-cabinet::before {
+        
+        /* Screws for the wooden board */
+        .screw {
+            width: 16px;
+            height: 16px;
+            background-color: #a9a9a9;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: inset 1px 1px 3px rgba(255,255,255,0.8), inset -1px -1px 3px rgba(0,0,0,0.5), 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .screw::after {
             content: '';
             position: absolute;
-            top: -4px; left: -4px; right: -4px; bottom: -4px;
-            border: 4px solid var(--neon-pink);
-            border-radius: 24px;
-            z-index: -1;
-            animation: pulse-border 2s infinite alternate;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 2px;
+            background-color: #696969;
+            transform: translate(-50%, -50%) rotate(45deg);
         }
 
-        /* Slot Styling */
-        .slot-container {
-            background: #0f0518;
-            border: 3px solid #4a2b6d;
-            border-radius: 15px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* Slot Card Styling */
+        .slot-card {
+            background-color: #faedcd;
+            border: 6px solid #ccd5ae;
+            border-radius: 16px;
+            box-shadow: 0 8px 0 #b5c08a, 0 15px 20px rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+        .slot-card:active {
+            transform: translateY(8px);
+            box-shadow: 0 0px 0 #b5c08a, 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .slot-card.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        /* Sticker Styling for Emojis */
+        .sticker-container {
+            width: 100px;
+            height: 100px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            border: 4px solid white;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.1), 0 6px 10px rgba(0,0,0,0.15);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden; /* For spin effect */
             position: relative;
-            overflow: hidden;
         }
 
-        .slot-container:hover {
-            transform: translateY(-5px) scale(1.02);
-            border-color: var(--neon-yellow);
-            box-shadow: 0 0 15px rgba(255, 184, 0, 0.5), inset 0 0 15px rgba(0,0,0,0.8);
-        }
-
-        .slot-container:active {
-            transform: translateY(2px) scale(0.98);
-        }
-
-        .slot-emoji {
-            font-size: 4rem;
-            line-height: 1;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+        .emoji-display {
+            font-size: 3.5rem;
+            filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.2));
+            position: absolute;
             transition: transform 0.1s;
         }
 
-        .spinning .slot-emoji {
-            animation: spin-blur 0.1s infinite linear;
-        }
-
-        /* Text Gradients */
-        .text-neon {
-            background: linear-gradient(to right, var(--neon-cyan), var(--neon-pink));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255,255,255,0.1);
-        }
-
         /* Animations */
-        @keyframes pulse-border {
-            0% { opacity: 0.5; box-shadow: 0 0 10px var(--neon-pink); }
-            100% { opacity: 1; box-shadow: 0 0 30px var(--neon-pink); }
+        @keyframes pop {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.2) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        .animate-pop {
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        @keyframes spin-blur {
-            0% { transform: translateY(-30px) scaleY(1.5); opacity: 0.5; }
-            50% { transform: translateY(0) scaleY(1); opacity: 1; }
-            100% { transform: translateY(30px) scaleY(1.5); opacity: 0.5; }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px #ffb703; }
+            50% { box-shadow: 0 0 30px #ffb703, 0 0 10px #ffb703 inset; }
         }
 
-        @keyframes pop-in {
-            0% { transform: scale(0); opacity: 0; }
-            80% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
+        .highlight-slot {
+            animation: pulse-glow 1.5s infinite;
+            border-color: #ffb703 !important;
         }
 
-        .pop-in { animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        /* Buttons */
-        .btn-arcade {
-            background: linear-gradient(180deg, var(--neon-pink) 0%, #cc0044 100%);
-            border: 3px solid white;
-            box-shadow: 0 6px 0 #880022, 0 0 15px var(--neon-pink);
-            transition: all 0.1s;
+        /* Cloud Animations for background */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            animation: moveClouds linear infinite;
+            z-index: -1;
         }
-        .btn-arcade:active {
-            transform: translateY(6px);
-            box-shadow: 0 0 0 #880022, 0 0 5px var(--neon-pink);
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
         }
-
-        .btn-arcade-blue {
-            background: linear-gradient(180deg, var(--neon-cyan) 0%, #0099aa 100%);
-            border: 3px solid white;
-            box-shadow: 0 6px 0 #005566, 0 0 15px var(--neon-cyan);
-            transition: all 0.1s;
-        }
-        .btn-arcade-blue:active {
-            transform: translateY(6px);
-            box-shadow: 0 0 0 #005566, 0 0 5px var(--neon-cyan);
+        @keyframes moveClouds {
+            0% { transform: translateX(-150px); }
+            100% { transform: translateX(100vw); }
         }
 
         /* Confetti Canvas */
@@ -137,322 +150,362 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 50;
+            z-index: 100;
+        }
+
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            width: 100%;
+            background-color: rgba(255,255,255,0.5);
+            border-radius: 999px;
+            border: 4px solid white;
+            height: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            width: 0%;
+            transition: width 0.5s ease-out;
+            position: relative;
+        }
+        /* Striped effect */
+        .progress-bar-fill::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background-image: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 30px 30px;
+            animation: moveStripes 1s linear infinite;
+        }
+        @keyframes moveStripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 30px 0; }
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="flex flex-col items-center min-h-screen relative">
 
-    <!-- Canvas for Confetti -->
-    <canvas id="confetti-canvas" class="hidden"></canvas>
+    <!-- Decorative Clouds -->
+    <div class="cloud" style="width: 100px; height: 30px; top: 10%; left: 10%; animation-duration: 35s;"></div>
+    <div class="cloud" style="width: 150px; height: 45px; top: 20%; left: 60%; animation-duration: 45s;"></div>
+    <div class="cloud" style="width: 80px; height: 25px; top: 15%; left: 80%; animation-duration: 25s;"></div>
+
+    <canvas id="confetti-canvas"></canvas>
 
     <!-- START SCREEN -->
-    <div id="start-screen" class="max-w-3xl w-full text-center arcade-cabinet p-8 md:p-12 pop-in">
-        <h1 class="text-5xl md:text-7xl font-bold mb-4 text-neon tracking-wider">故事元素大冒險</h1>
-        <p class="text-xl md:text-2xl text-cyan-200 mb-8 font-bold">言語治療小遊戲</p>
-        
-        <div class="bg-black bg-opacity-40 rounded-xl p-6 mb-8 text-left border border-purple-500 shadow-inner">
-            <h2 class="text-2xl text-yellow-300 mb-4 flex items-center"><span class="text-3xl mr-2">🎮</span> 遊戲玩法：</h2>
-            <ul class="space-y-3 text-lg text-gray-100">
-                <li class="flex items-start"><span class="text-pink-400 mr-2">1.</span> 學生開始講述一個的故事。</li>
-                <li class="flex items-start"><span class="text-pink-400 mr-2">2.</span> 當學生成功講出一個「故事元素」（如：時間、地點）時，治療師點擊對應的老虎機按鈕。</li>
-                <li class="flex items-start"><span class="text-pink-400 mr-2">3.</span> 便可轉出一個隨機的 Emoji。</li>
-                <li class="flex items-start"><span class="text-pink-400 mr-2">4.</span> 學生需要嘗試將這個Emoji加入並豐富正在講述的故事中！</li>
-                <li class="flex items-start"><span class="text-pink-400 mr-2">5.</span> 集齊所有故事元素，完成終極大冒險！</li>
-            </ul>
+    <div id="start-screen" class="screen active flex-col items-center justify-center min-h-screen w-full p-4 z-10">
+        <div class="bg-white/90 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-2xl max-w-2xl text-center border-8 border-yellow-400">
+            <h1 class="text-5xl md:text-6xl font-black text-blue-600 mb-6 drop-shadow-md tracking-wide">
+                🧭 故事元素貼紙機 🗺️
+            </h1>
+            <div class="text-left bg-blue-50 p-6 rounded-2xl mb-8 border-4 border-blue-200 shadow-inner">
+                <h2 class="text-2xl font-bold text-blue-800 mb-4">歡迎來到故事老虎機！</h2>
+                <ul class="text-xl text-gray-700 space-y-3 font-medium leading-relaxed">
+                    <li>🎯 <strong>目標：</strong>說出包含8個元素的完整故事。</li>
+                    <li>🎰 <strong>玩法：</strong>當你說出一個故事元素，便可以點擊對應的格子。</li>
+                    <li>✨ <strong>驚喜：</strong>格子會轉出一張隨機的「貼紙」！</li>
+                    <li>🧩 <strong>挑戰：</strong>試著把抽到的貼紙加進你的故事裡，讓故事更有趣、豐富！</li>
+                </ul>
+            </div>
+            <button id="btn-start" class="text-3xl bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white font-black py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 border-4 border-white">
+                🚀 開始
+            </button>
         </div>
-
-        <button onclick="startGame()" class="btn-arcade text-3xl text-white font-bold py-4 px-12 rounded-full uppercase tracking-widest">
-            開始遊戲 START
-        </button>
     </div>
 
     <!-- GAME SCREEN -->
-    <div id="game-screen" class="max-w-6xl w-full hidden">
-        <div class="flex justify-between items-center mb-6 px-4">
-            <h2 class="text-3xl md:text-4xl font-bold text-neon">故事元素大冒險</h2>
-            <div class="bg-black bg-opacity-60 border-2 border-cyan-400 rounded-full px-6 py-2 flex items-center shadow-[0_0_10px_#05d9e8]">
-                <span class="text-xl mr-3 text-cyan-200">收集進度:</span>
-                <div class="text-3xl font-bold text-yellow-300">
-                    <span id="score-display">0</span> / 8
+    <div id="game-screen" class="screen flex-col items-center w-full max-w-6xl p-4 pt-8 z-10">
+        <!-- Header & Progress -->
+        <div class="w-full flex flex-col md:flex-row justify-between items-center mb-6 bg-white/80 p-4 rounded-2xl shadow-lg border-4 border-white backdrop-blur-sm">
+            <h1 class="text-3xl md:text-4xl font-black text-blue-700 mb-4 md:mb-0 drop-shadow-sm">故事元素貼紙機</h1>
+            <div class="w-full md:w-1/2 flex flex-col items-center">
+                <div class="text-xl font-bold text-gray-700 mb-2">已收集元素: <span id="progress-text" class="text-3xl text-green-600 font-black">0 / 8</span></div>
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar-fill"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="w-full bg-gray-800 rounded-full h-4 mb-8 border border-gray-600 overflow-hidden">
-            <div id="progress-bar" class="bg-gradient-to-r from-cyan-400 to-pink-500 h-4 rounded-full transition-all duration-500 w-0 shadow-[0_0_10px_#ff2a6d]"></div>
-        </div>
+        <!-- Slot Machine Board -->
+        <div class="wooden-board w-full p-6 md:p-10">
+            <!-- Screws -->
+            <div class="screw" style="top: 15px; left: 15px;"></div>
+            <div class="screw" style="top: 15px; right: 15px;"></div>
+            <div class="screw" style="bottom: 15px; left: 15px;"></div>
+            <div class="screw" style="bottom: 15px; right: 15px;"></div>
 
-        <!-- Slot Machine Grid -->
-        <div class="arcade-cabinet p-6 md:p-8">
-            <div id="slots-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <!-- Slots will be generated by JS -->
-            </div>
-            
-            <div class="mt-8 text-center hidden" id="finish-btn-container">
-                <button onclick="endGame()" class="btn-arcade text-2xl text-white font-bold py-3 px-10 rounded-full pop-in">
-                    🎉 你説了一個完整的故事！查看結果 🎉
-                </button>
+            <!-- Slots Grid -->
+            <div id="slots-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                <!-- Slots will be generated here by JS -->
             </div>
         </div>
     </div>
 
     <!-- END SCREEN -->
-    <div id="end-screen" class="max-w-5xl w-full hidden text-center arcade-cabinet p-8 md:p-12">
-        <h1 class="text-5xl md:text-6xl font-bold mb-2 text-neon">大成功！</h1>
-        <p class="text-2xl text-yellow-300 mb-8">你創作了一個有趣、完整故事！</p>
-        
-        <div class="bg-black bg-opacity-50 border-2 border-purple-500 rounded-2xl p-6 mb-8">
-            <h3 class="text-xl text-cyan-300 mb-4 border-b border-purple-500 pb-2">故事元素回顧：</h3>
-            <div id="summary-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
-                <!-- Summary items generated by JS -->
+    <div id="end-screen" class="screen flex-col items-center justify-center min-h-screen w-full p-4 z-20 absolute top-0 left-0 bg-black/40 backdrop-blur-sm">
+        <div class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl max-w-4xl text-center border-8 border-yellow-400 transform transition-all scale-95 hover:scale-100">
+            <h1 class="text-5xl md:text-6xl font-black text-yellow-500 mb-4 drop-shadow-md">🎉 非常好！ 🎉</h1>
+            <p class="text-2xl text-gray-700 font-bold mb-8">你完成了一個超級精彩的完整故事！</p>
+            
+            <div class="bg-blue-50 rounded-2xl p-6 mb-8 border-4 border-blue-100 shadow-inner">
+                <h3 class="text-xl font-bold text-blue-800 mb-4">你的故事元素貼紙：</h3>
+                <div id="summary-stickers" class="flex flex-wrap justify-center gap-4">
+                    <!-- Stickers recap generated by JS -->
+                </div>
             </div>
-        </div>
 
-        <button onclick="resetGame()" class="btn-arcade-blue text-2xl text-white font-bold py-4 px-10 rounded-full">
-            🔄 再玩一次 PLAY AGAIN
-        </button>
+            <button id="btn-restart" class="text-3xl bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white font-black py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 border-4 border-white">
+                🔄 再玩一次
+            </button>
+        </div>
     </div>
 
     <script>
-        // --- DATA ---
-        const storyGrammarElements = [
-            { id: 'time', label: '時間', icon: '🕒', color: '#FF5733' },
-            { id: 'place', label: '地點', icon: '📍', color: '#33FF57' },
-            { id: 'character', label: '人物', icon: '👤', color: '#3357FF' },
-            { id: 'initiating', label: '起因', icon: '❔', color: '#F1C40F' },
-            { id: 'reaction', label: '反應', icon: '😦', color: '#9B59B6' },
-            { id: 'plan', label: '計劃', icon: '💡', color: '#E67E22' },
-            { id: 'action', label: '行動', icon: '🏃', color: '#1ABC9C' },
-            { id: 'consequence', label: '結果+感受', icon: '🎉', color: '#E74C3C' }
+        // --- 1. DATA & STATE ---
+        const STORY_ELEMENTS = [
+            { id: 'time', name: '時間', color: 'text-blue-600', bg: 'bg-blue-100', emojis: ['☀️', '🌧️', '❄️', '⏰', '🌙', '🌅', '🌈', '⛈️'] },
+            { id: 'place', name: '地點', color: 'text-green-600', bg: 'bg-green-100', emojis: ['🏫', '🏞️', '🏰', '🏝️', '🏠', '🏥', '🏕️', '🎡'] },
+            { id: 'character', name: '人物', color: 'text-purple-600', bg: 'bg-purple-100', emojis: ['👦', '👧', '🧙‍♂️', '🐶', '🐱', '🐉', '🦸‍♀️', '🤖', '👽', '👸', '👻', '🤡'] },
+            { id: 'cause', name: '起因', color: 'text-red-600', bg: 'bg-red-100', emojis: ['💥', '🎁', '🌪️', '💌', '🛸', '🪄', '🌋', '🗝️', '🚨', '💣'] },
+            { id: 'reaction', name: '反應', color: 'text-orange-500', bg: 'bg-orange-100', emojis: ['😲', '😨', '🤔', '🤩', '😠', '🥺', '😱', '🥶', '😡', '🤯'] },
+            { id: 'plan', name: '計劃', color: 'text-indigo-600', bg: 'bg-indigo-100', emojis: ['💡', '💭', '🧭', '📖', '🔍', '📝', '🧠', '🎯', '🗺️'] },
+            { id: 'action', name: '行動', color: 'text-teal-600', bg: 'bg-teal-100', emojis: ['🏃', '🏊', '🧗', '🚣', '🕵️', '🤺', '🛠️', '🗣️', '🦸', '🚶'] },
+            { id: 'result', name: '結果+感受', color: 'text-pink-600', bg: 'bg-pink-100', emojis: ['🎉', '🏆', '😭', '🥰', '🥳', '💀', '🩹', '🤝', '💖', '🥇'] }
         ];
 
-        // A large list of fun, recognizable emojis for children
-        const emojis = [
-            '🐶','🐱','🐭','🌼','🚲','🛸','🛟','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦖','🦕','🐙','🦑','🦐','🦀','🐡','🐠','🐟','🐬','🐳','🦈','🐊','🐅','🦓','🦍','🐘','🦛','🦏','🐪','🦒','🦘','🐎','🐖','🐑','🦙','🐐','🦌','🐕','🐈','🦚','🦜','🦢','🦩','🐇','🦝','🦨','🦥','🐁','🐿','🦔','🐾','🐉','🐲','🌵','🎄','🌲','🌳','🌴','🌱','🌿','☘','🍀','🍃','🍂','🍁','🍄','💐','🌷','🌹','🌺','🌸','🌼','🌻','🌞','🌝','🌛','🌙','🌎','🪐','⭐','🌟','✨','⚡','☄','💥','🔥','🌪','🌈','☀️','☁','🌦','🌧','⛈','🌨','❄','⛄','🌬','💧','💦','☔','🌊','🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥒','🌶','🌽','🥕','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🌮','🌯','🥗','🥘','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','☕','🍵','🧃','🥤','🧊'
-        ];
-
-        // --- STATE ---
         let state = {
             progress: 0,
-            slotsData: {}, // { id: { emoji: '🐶', isLocked: true } }
-            isSpinning: false
+            slots: STORY_ELEMENTS.map(el => ({ ...el, locked: false, currentEmoji: '❓', isSpinning: false }))
         };
 
-        // --- AUDIO SYSTEM (Web Audio API for arcade sounds without external files) ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // --- 2. AUDIO SYSTEM (Self-contained) ---
+        let audioCtx;
 
-        function playTone(frequency, type, duration, vol = 0.1) {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.type = type;
-            oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-            
-            // Envelope to prevent clicking
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.01);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + duration);
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
 
-        function playClickSound() {
-            playTone(800, 'square', 0.1, 0.05);
-        }
-
-        function playSpinSound() {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
+        function playTone(freq, type, duration, vol = 0.1) {
+            if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            // Envelope to avoid clicking sounds
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
+            osc.stop(audioCtx.currentTime + duration);
         }
 
+        function playClickSound() { playTone(800, 'sine', 0.1, 0.05); }
+        function playSpinTick() { playTone(1200, 'triangle', 0.05, 0.02); }
         function playSuccessSound() {
             playTone(523.25, 'sine', 0.15, 0.1); // C5
             setTimeout(() => playTone(659.25, 'sine', 0.15, 0.1), 100); // E5
             setTimeout(() => playTone(783.99, 'sine', 0.3, 0.1), 200); // G5
         }
-
-        function playWinGameSound() {
-            const notes = [440, 554.37, 659.25, 880, 1108.73, 1318.51]; // A major arpeggio
-            notes.forEach((freq, i) => {
-                setTimeout(() => playTone(freq, 'square', 0.2, 0.1), i * 100);
+        function playWinSound() {
+            [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                setTimeout(() => playTone(freq, i%2===0 ? 'square':'triangle', 0.4, 0.1), i * 100);
             });
         }
 
-        // --- DOM ELEMENTS ---
-        const startScreen = document.getElementById('start-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const endScreen = document.getElementById('end-screen');
-        const slotsGrid = document.getElementById('slots-grid');
-        const scoreDisplay = document.getElementById('score-display');
-        const progressBar = document.getElementById('progress-bar');
-        const finishBtnContainer = document.getElementById('finish-btn-container');
-        const summaryGrid = document.getElementById('summary-grid');
+        // --- 3. DOM ELEMENTS ---
+        const screens = {
+            start: document.getElementById('start-screen'),
+            game: document.getElementById('game-screen'),
+            end: document.getElementById('end-screen')
+        };
+        const slotsContainer = document.getElementById('slots-container');
+        const progressText = document.getElementById('progress-text');
+        const progressBar = document.getElementById('progressBar');
+        const progressBarFill = document.getElementById('progress-bar');
+        const summaryStickers = document.getElementById('summary-stickers');
 
-        // --- INITIALIZATION ---
-        function initSlots() {
-            slotsGrid.innerHTML = '';
-            storyGrammarElements.forEach(element => {
-                // Initialize state
-                state.slotsData[element.id] = { emoji: null, isLocked: false };
-
-                // Create DOM
-                const slotDiv = document.createElement('div');
-                slotDiv.className = 'slot-container flex flex-col items-center justify-center p-4 h-48 md:h-56 group';
-                slotDiv.id = `slot-${element.id}`;
-                slotDiv.onclick = () => handleSlotClick(element.id);
-
-                slotDiv.innerHTML = `
-                    <div class="text-gray-400 mb-2 font-bold text-lg md:text-xl tracking-widest flex items-center gap-2 z-10">
-                        <span class="text-2xl">${element.icon}</span> 
-                        <span style="color: ${element.color}">${element.label}</span>
-                    </div>
-                    <div class="slot-bg absolute inset-0 opacity-10 transition-opacity group-hover:opacity-20" style="background-color: ${element.color}"></div>
-                    <div class="slot-emoji-container flex-1 flex items-center justify-center relative w-full h-full">
-                        <div id="emoji-${element.id}" class="slot-emoji text-gray-600 opacity-50 text-5xl md:text-6xl">❓</div>
-                    </div>
-                    <div class="mt-2 text-xs text-gray-500 font-bold tracking-widest uppercase click-hint group-hover:text-yellow-400 transition-colors">
-                        點擊抽圖案 (TAP)
-                    </div>
-                `;
-                slotsGrid.appendChild(slotDiv);
-            });
+        // --- 4. GAME LOGIC & RENDERING ---
+        
+        function switchScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[screenName].classList.add('active');
         }
 
-        // --- CORE LOGIC ---
-        function startGame() {
+        function initGame() {
+            initAudio();
             playClickSound();
-            startScreen.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
-            gameScreen.classList.add('pop-in');
-            initSlots();
-            updateProgressDisplay();
-        }
-
-        function getRandomEmoji() {
-            return emojis[Math.floor(Math.random() * emojis.length)];
-        }
-
-        function handleSlotClick(id) {
-            if (state.isSpinning) return; // Prevent clicking while another is spinning
             
-            const slotData = state.slotsData[id];
-            const slotEl = document.getElementById(`slot-${id}`);
-            const emojiEl = document.getElementById(`emoji-${id}`);
-            
-            state.isSpinning = true;
-            playSpinSound();
-            
-            slotEl.classList.add('spinning');
-            emojiEl.classList.remove('text-gray-600', 'opacity-50');
-            emojiEl.classList.add('text-white');
-
-            // Visual spin effect
-            let spinCount = 0;
-            const spinInterval = setInterval(() => {
-                emojiEl.textContent = getRandomEmoji();
-                spinCount++;
-                
-                if (spinCount > 15) { // Stop after 15 changes (~750ms)
-                    clearInterval(spinInterval);
-                    finalizeSpin(id, slotEl, emojiEl, slotData);
-                }
-            }, 50);
-        }
-
-        function finalizeSpin(id, slotEl, emojiEl, slotData) {
-            slotEl.classList.remove('spinning');
-            const finalEmoji = getRandomEmoji();
-            emojiEl.textContent = finalEmoji;
-            emojiEl.style.transform = 'scale(1.3)';
-            setTimeout(() => emojiEl.style.transform = 'scale(1)', 200);
-
-            // Play sound
-            playSuccessSound();
-
-            // Update state styling
-            slotEl.classList.add('border-green-400');
-            slotEl.classList.remove('border-[#4a2b6d]');
-            slotEl.querySelector('.click-hint').textContent = '重新抽取 (RE-ROLL)';
-            slotEl.querySelector('.click-hint').classList.remove('text-gray-500');
-            slotEl.querySelector('.click-hint').classList.add('text-green-400');
-
-            // Update progress if first time clicking this slot
-            if (!slotData.isLocked) {
-                slotData.isLocked = true;
-                state.progress++;
-                updateProgressDisplay();
-            }
-            
-            slotData.emoji = finalEmoji; // Store the final emoji for the summary
-            state.isSpinning = false;
-        }
-
-        function updateProgressDisplay() {
-            scoreDisplay.textContent = state.progress;
-            const percentage = (state.progress / 8) * 100;
-            progressBar.style.width = `${percentage}%`;
-
-            if (state.progress === 8) {
-                setTimeout(() => {
-                    finishBtnContainer.classList.remove('hidden');
-                    playWinGameSound();
-                }, 1000);
-            }
-        }
-
-        function endGame() {
-            playClickSound();
-            gameScreen.classList.add('hidden');
-            endScreen.classList.remove('hidden');
-            endScreen.classList.add('pop-in');
-            
-            // Build summary
-            summaryGrid.innerHTML = '';
-            storyGrammarElements.forEach(element => {
-                const finalEmoji = state.slotsData[element.id].emoji || '❓';
-                const div = document.createElement('div');
-                div.className = 'bg-gray-800 rounded-lg p-3 flex items-center shadow-md border border-gray-600';
-                div.innerHTML = `
-                    <div class="text-3xl mr-3">${finalEmoji}</div>
-                    <div>
-                        <div class="text-xs text-gray-400">${element.icon} ${element.label}</div>
-                    </div>
-                `;
-                summaryGrid.appendChild(div);
-            });
-
-            startConfetti();
-        }
-
-        function resetGame() {
-            playClickSound();
+            // Reset state
             state.progress = 0;
-            state.slotsData = {};
-            state.isSpinning = false;
+            state.slots = STORY_ELEMENTS.map(el => ({ ...el, locked: false, currentEmoji: '❓', isSpinning: false }));
             
-            finishBtnContainer.classList.add('hidden');
-            endScreen.classList.add('hidden');
-            
+            updateProgressUI();
+            renderSlots();
+            switchScreen('game');
             stopConfetti();
-            startGame(); // goes back to game screen and re-inits
         }
 
-        // --- CONFETTI SYSTEM (Simple Canvas implementation) ---
+        function updateProgressUI() {
+            progressText.innerText = `${state.progress} / 8`;
+            progressBarFill.style.width = `${(state.progress / 8) * 100}%`;
+            
+            if (state.progress === 8) {
+                setTimeout(showEndScreen, 1500);
+            }
+        }
+
+        function renderSlots() {
+            slotsContainer.innerHTML = '';
+            state.slots.forEach((slot, index) => {
+                const card = document.createElement('div');
+                card.className = `slot-card ${slot.locked ? 'bg-yellow-50 border-yellow-300' : ''}`;
+                card.onclick = () => handleSlotClick(index);
+
+                // Title
+                const title = document.createElement('div');
+                title.className = `text-2xl font-black ${slot.color} mb-2 bg-white px-4 py-1 rounded-full shadow-sm border-2 border-dashed border-gray-300`;
+                title.innerText = slot.name;
+
+                // Sticker Container
+                const stickerBg = document.createElement('div');
+                stickerBg.className = `sticker-container ${slot.bg} ${slot.locked ? 'highlight-slot' : ''}`;
+                stickerBg.id = `sticker-${index}`;
+
+                const emojiSpan = document.createElement('span');
+                emojiSpan.className = 'emoji-display';
+                emojiSpan.id = `emoji-${index}`;
+                emojiSpan.innerText = slot.currentEmoji;
+                
+                // Add specific styling if locked
+                if (slot.locked) {
+                    stickerBg.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+                    stickerBg.classList.remove('highlight-slot'); // remove pulse after lock
+                }
+
+                stickerBg.appendChild(emojiSpan);
+                card.appendChild(title);
+                card.appendChild(stickerBg);
+                slotsContainer.appendChild(card);
+            });
+        }
+
+        function handleSlotClick(index) {
+            initAudio();
+            const slot = state.slots[index];
+            
+            if (slot.isSpinning) return; // Prevent double click while spinning
+            
+            slot.isSpinning = true;
+            
+            // If it's the first time being locked in, increase progress
+            const isFirstTime = !slot.locked;
+            
+            // Visuals for spinning
+            const stickerContainer = document.getElementById(`sticker-${index}`);
+            const emojiDisplay = document.getElementById(`emoji-${index}`);
+            stickerContainer.classList.remove('animate-pop');
+            stickerContainer.style.transform = 'rotate(0deg)';
+            
+            let ticks = 0;
+            const maxTicks = 20; // 2 seconds at 100ms
+            
+            const spinInterval = setInterval(() => {
+                // Pick random emoji during spin
+                const randomEmoji = slot.emojis[Math.floor(Math.random() * slot.emojis.length)];
+                emojiDisplay.innerText = randomEmoji;
+                // Move it up and down slightly for blur effect
+                emojiDisplay.style.transform = `translateY(${Math.random() * 10 - 5}px)`;
+                
+                if (ticks % 2 === 0) playSpinTick();
+                ticks++;
+
+                if (ticks >= maxTicks) {
+                    clearInterval(spinInterval);
+                    finishSpin(index, isFirstTime);
+                }
+            }, 80);
+        }
+
+        function finishSpin(index, wasFirstTime) {
+            const slot = state.slots[index];
+            const stickerContainer = document.getElementById(`sticker-${index}`);
+            const emojiDisplay = document.getElementById(`emoji-${index}`);
+            
+            // Pick final emoji
+            const finalEmoji = slot.emojis[Math.floor(Math.random() * slot.emojis.length)];
+            slot.currentEmoji = finalEmoji;
+            slot.locked = true;
+            slot.isSpinning = false;
+            
+            // Update UI
+            emojiDisplay.innerText = finalEmoji;
+            emojiDisplay.style.transform = 'translateY(0px)';
+            
+            // Animation and Sound
+            playSuccessSound();
+            stickerContainer.classList.add('animate-pop');
+            
+            // Random rotation for sticker look
+            const rot = Math.random() * 14 - 7;
+            setTimeout(() => {
+                stickerContainer.style.transform = `rotate(${rot}deg)`;
+                // Update parent style
+                renderSlots(); // Re-render to update backgrounds
+            }, 500);
+
+            // Update Progress
+            if (wasFirstTime) {
+                state.progress++;
+                updateProgressUI();
+            }
+        }
+
+        function showEndScreen() {
+            playWinSound();
+            startConfetti();
+            
+            // Populate summary stickers
+            summaryStickers.innerHTML = '';
+            state.slots.forEach(slot => {
+                const sticker = document.createElement('div');
+                sticker.className = `w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl shadow-md border-4 border-gray-200 transform hover:scale-110 transition cursor-help`;
+                sticker.innerText = slot.currentEmoji;
+                sticker.title = slot.name; // Tooltip
+                sticker.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                summaryStickers.appendChild(sticker);
+            });
+
+            switchScreen('end');
+        }
+
+        // --- 5. CONFETTI SYSTEM ---
         const canvas = document.getElementById('confetti-canvas');
         const ctx = canvas.getContext('2d');
         let confettiParticles = [];
@@ -465,59 +518,61 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height - canvas.height;
-                this.size = Math.random() * 10 + 5;
-                this.speedY = Math.random() * 3 + 2;
-                this.speedX = Math.random() * 4 - 2;
-                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                this.rotation = Math.random() * 360;
-                this.rotationSpeed = Math.random() * 10 - 5;
-            }
-            update() {
-                this.y += this.speedY;
-                this.x += this.speedX;
-                this.rotation += this.rotationSpeed;
-                if (this.y > canvas.height) {
-                    this.y = -10;
-                    this.x = Math.random() * canvas.width;
-                }
-            }
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation * Math.PI / 180);
-                ctx.fillStyle = this.color;
-                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
-                ctx.restore();
-            }
-        }
-
         function startConfetti() {
-            canvas.classList.remove('hidden');
             confettiParticles = [];
+            const colors = ['#ff0a54', '#ff477e', '#ff7096', '#ff85a1', '#fbb1bd', '#f9bec7', '#ff99c8', '#fcf6bd', '#d0f4de', '#a9def9', '#e4c1f9'];
+            
             for (let i = 0; i < 150; i++) {
-                confettiParticles.push(new Particle());
+                confettiParticles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 100,
+                    r: Math.random() * 6 + 4,
+                    dx: Math.random() * 20 - 10,
+                    dy: Math.random() * -20 - 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleInc: (Math.random() * 0.07) + 0.05,
+                    tiltAngle: 0
+                });
             }
             animateConfetti();
         }
 
         function animateConfetti() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let active = false;
             confettiParticles.forEach(p => {
-                p.update();
-                p.draw();
+                p.tiltAngle += p.tiltAngleInc;
+                p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
+                p.x += Math.sin(p.tiltAngle) * 2;
+                p.dy += 0.2; // gravity
+                p.x += p.dx;
+                p.y += p.dy;
+
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                ctx.stroke();
+
+                if (p.y < canvas.height) active = true;
             });
-            confettiAnimationId = requestAnimationFrame(animateConfetti);
+
+            if (active) {
+                confettiAnimationId = requestAnimationFrame(animateConfetti);
+            }
         }
 
         function stopConfetti() {
-            canvas.classList.add('hidden');
             cancelAnimationFrame(confettiAnimationId);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
+
+        // --- 6. EVENT LISTENERS ---
+        document.getElementById('btn-start').addEventListener('click', initGame);
+        document.getElementById('btn-restart').addEventListener('click', initGame);
 
     </script>
 </body>
